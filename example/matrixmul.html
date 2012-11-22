@@ -1,0 +1,138 @@
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <script type="text/javascript" src="../gpgl.js"></script>
+    </head>
+    <body>
+        <h1>GPGL Matrix Multiplication</h1>
+        <canvas style="display: none" id="canvas"></canvas>
+        <script type="text/javascript">
+            var error, rel_error, max_rel_error,
+                gpgl, imgA, imgB, imgC, kernel,
+                m, n, k, time_cpu, time_gpu, time_gpu_cpy,
+                M = 256,
+                N = 256,
+                K = 256,
+                A = new Float32Array(N*M),
+                B = new Float32Array(K*N),
+                C = new Float32Array(K*M),
+                ref = new Float32Array(K*M),
+                a_pos = 0,
+                b_pos = 0,
+                ref_pos = 0,
+                success = true;
+
+            // Generate random data for input arrays
+            for (n = 0; n < N*M; ++n) {
+                A[n] = Math.random();
+            }
+            for (n = 0; n < K*N; ++n) {
+                B[n] = Math.random();
+            }
+
+            // Instantiate general purpose GL wrapper 
+            try {
+                gpgl = new GPGL(document.getElementById("canvas"));
+                if (gpgl.has_float === null) {
+                    alert("Your browsers WebGL implementation does not support floating point textures");
+                    return;
+                }
+            } catch (err) {
+                alert("Your browser does not support WebGL");
+                return;
+            }
+
+            // Create kernel for matrix multiplication
+            kernel = gpgl.createKernel("\
+                uniform sampler2D A;\
+                uniform sampler2D B;\
+                \
+                void main() {\
+                    float sum = 0.0;\
+                    float step = 1.0 / " + N + ".0;\
+                    vec2 a_pos = vec2(step / 2.0, global_id_norm.y);\
+                    vec2 b_pos = vec2(global_id_norm.x, step / 2.0);\
+                    for (int i = 0; i < " + N + "; ++i) {\
+                        sum += texture2D(A, a_pos).r * texture2D(B, b_pos).r;\
+                        a_pos.x += step;\
+                        b_pos.y += step;\
+                    }\
+                    gl_FragColor = encode_float(sum);\
+                }");
+
+            time_gpu_cpy = new Date().getTime();
+
+            // Copy arrays from host memory to device memory
+            imgA = gpgl.createImage2D(N, M, gpgl.Format.FLOAT32, A);
+            imgB = gpgl.createImage2D(K, N, gpgl.Format.FLOAT32, B);
+            imgC = gpgl.createImage2D(K, M, gpgl.Format.UBYTE8888);
+
+            // Set kernel parameters
+            kernel.setArgImage("A", imgA);
+            kernel.setArgImage("B", imgB);
+
+            // Run kernel
+            time_gpu = new Date().getTime();
+            kernel.run(imgC);
+            time_gpu = new Date().getTime() - time_gpu;
+
+            // Copy result from device memory to host memory
+            C = imgC.readPixels(true);
+
+            time_gpu_cpy = new Date().getTime() - time_gpu_cpy;
+
+            document.write("<p>" + 
+                           "GPU execution duration: " + time_gpu + " ms<br>" +
+                           "GPU memory copy duration: " + (time_gpu_cpy - time_gpu) + " ms</p>");
+
+            // Cleanup
+            kernel.delete();
+            imgC.delete();
+            imgB.delete();
+            imgA.delete();
+
+            // Run cpu reference implementation
+            time_cpu = new Date().getTime();
+            for (m = 0; m < M; ++m) {
+                for (k = 0; k < K; ++k) {
+                    for (n = 0; n < N; ++n) {
+                        ref[ref_pos] += A[a_pos] * B[b_pos];
+                        ++a_pos;
+                        b_pos += K;
+                    }
+                    a_pos -= N;
+                    b_pos -= (N*K) - 1;
+                    ++ref_pos;
+                }
+                a_pos += N;
+                b_pos -= K;
+            }
+            time_cpu = new Date().getTime() - time_cpu;
+
+            document.write("<p>" +
+                           "CPU execution duration: " + time_cpu + " ms<br>" +
+                           "Speedup: " + (time_cpu / time_gpu_cpy) + "</p>");
+
+            // Calculate biggest relative error occurred
+            rel_error = 0;
+            for (n = 0; n < M*K; ++n) {
+                error = Math.abs((C[n] - ref[n]) / C[n]);
+                if (rel_error < error) {
+                    rel_error = error;
+                }
+            }
+
+            // Test whether relative error is smaller than maximum relative error
+            max_rel_error = Math.pow(2, -16);
+            if (max_rel_error < rel_error) {
+                success = false;
+            }
+
+            document.write("<p>" +
+                           "Result " + (success ? "successfully verified!" : "verification failed!") + "<br>" +
+                           "Biggest relative error: " + (rel_error * 100) + " %</p>");
+            
+        </script>
+    </body>
+</html>

@@ -1,4 +1,13 @@
+/**
+ * Creates wrapper for general purpose computing using WebGL.
+ * @class GPGL Wrapper
+ * @param {HTMLCanvasElement} canvas HTML5 canvas object.
+ */
 function GPGL(canvas) {
+    "use strict";
+
+    /** @private */
+
     var gl = canvas.getContext("experimental-webgl");
     if (!gl) {
         throw "WebGL is not available";
@@ -7,16 +16,65 @@ function GPGL(canvas) {
     var has_float = gl.getExtension("OES_texture_float");
 
     var gpgl = {
+    /** @lends GPGL.prototype */
+        /** @public */
+
+        /**
+         * WebGL Context
+         * @type WebGLRenderingContext
+         */
         gl: gl,
+
+        /**
+         * Indicates whether floating point textures extension is available.
+         * @type Boolean
+         */
         has_float: has_float,
 
-        IMAGE_RGBA_UBYTE: 0,
-        IMAGE_L_FLOAT: 1,
+        /**
+         * Enumerator for image format
+         * @class Image formats
+         */
+        Format: {
+            /**
+             * Image format for four channel unsigned byte.
+             * @type Enum
+             */
+            UBYTE8888: 0,
 
-        ARG_FLOAT: 0,
-        ARG_INT: 1,
+            /**
+             * Image format for single channel floating point.
+             * @type Enum
+             */
+            FLOAT32:   1
+        },
 
-        createKernel: function(fragment) {
+        /**
+         * Enumerator for kernel argument type.
+         * @class Kernel argument types
+         */
+        Arg: {
+            /**
+             * Kernel argument type floating point.
+             * @type Enum
+             */
+            FLOAT: 0,
+
+            /**
+             * Kernel argument type integer.
+             * @type Enum
+             */
+            INT:   1,
+        },
+
+        /**
+         * Creates kernel function.
+         * @param {String} source Source code of kernel function.
+         * @returns {GPGL.Kernel}
+         */
+        createKernel: function(source) {
+            /** @private */
+
             var texIds = {
                 list: [],
                 dict: {}
@@ -39,15 +97,16 @@ function GPGL(canvas) {
             var v = gl.createShader(gl.VERTEX_SHADER),
                 f = gl.createShader(gl.FRAGMENT_SHADER);
 
-            gl.shaderSource(v, "attribute vec2 a_position; \
+            gl.shaderSource(v, "precision highp float; \
+                                attribute vec2 a_position; \
                                 uniform float u_flipY; \
                                 uniform vec2 global_size_abs; \
                                 varying vec2 global_id_abs; \
                                 varying vec2 global_id_norm; \
                                 void main() { \
-                                    global_id_norm = (a_position + vec2(1, 1)) / vec2(2, 2); \
+                                    global_id_norm = a_position * 0.5 + 0.5; \
                                     global_id_abs = global_size_abs * global_id_norm; \
-                                    gl_Position = vec4(a_position * vec2(1, u_flipY), 0, 1); \
+                                    gl_Position = vec4(a_position * vec2(1, u_flipY), 1.0, 1.0); \
                                 }");
             gl.shaderSource(f, "precision highp float; \
                                 uniform vec2 global_size_abs; \
@@ -88,7 +147,7 @@ function GPGL(canvas) {
                                   float byte1 = (sign * 128.0 + remaining_bits_of_biased_exponent) / 255.0;\
                                   return vec4(byte4, byte3, byte2, byte1);\
                                 }" +
-                                fragment);
+                                source);
 
             gl.compileShader(v);
             if (!gl.getShaderParameter(v, gl.COMPILE_STATUS)) {
@@ -98,7 +157,7 @@ function GPGL(canvas) {
 
             gl.compileShader(f);
             if (!gl.getShaderParameter(f, gl.COMPILE_STATUS)) {
-                throw "Failed to compile fragment shader: " +
+                throw "Failed to compile kernel source: " +
                       gl.getShaderInfoLog(f);
             }
 
@@ -140,10 +199,10 @@ function GPGL(canvas) {
                     location = gl.getUniformLocation(program, name);
                     uniform = "uniform";
                     switch (type) {
-                    case gpgl.ARG_INT:
+                    case gpgl.Arg.INT:
                         uniform += "" + dim + "i";//v";
                         break;
-                    case gpgl.ARG_FLOAT:
+                    case gpgl.Arg.FLOAT:
                         uniform += "" + dim + "f";//v";
                         break;
                     default:
@@ -161,19 +220,46 @@ function GPGL(canvas) {
                 //gl[uniform](location, data[0], data[1], data[2], data[3]);
             }
 
+            /** @lends GPGL.Kernel.prototype */
             return {
+                /** @public */
+
+                /**
+                 * Set scalar kernel argument.
+                 * @param {String}   name  Name of the kernel uniform to map the value to.
+                 * @param {GPGL#Arg} type  Type of the kernel uniform.
+                 * @param {Number}   value Value to store in the kernel uniform.
+                 */
                 setArgScalar: function(name, type, value) {
                     setArg(name, type, 1, [value]);
                 },
 
+                /**
+                 * Set vector kernel argument.
+                 * @param {String}   name Name of the kernel uniform to map the values to.
+                 * @param {GPGL#Arg} type Type of the kernel uniform values.
+                 * @param {Number}   dim  Dimension of the data array.
+                 * @param {Array}    data Data array containing the values to store.
+                 */
                 setArgVector: function(name, type, dim, data) {
                     setArg(name, type, dim, data);
                 },
 
+                /**
+                 * Set array kernel argument.
+                 * @param {String}   name Name of the kernel uniform to map the array to.
+                 * @param {GPGL#Arg} type Type of the kernel uniform array.
+                 * @param {Array}    ref  Reference of the array to set.
+                 */
                 setArgArray: function(name, type, ref) {
                     setArg(name, type, 1, [ref], true);
                 },
 
+                /**
+                 * Set image kernel argument.
+                 * @param {String}       name Name of the kernel sampler2D to map the image to.
+                 * @param {GPGL.Texture} tex  Texture object to set.
+                 */
                 setArgImage: function(name, tex) {
                     var id, texId = 0;
                     if (texIds.dict[name] === undefined) {
@@ -191,20 +277,26 @@ function GPGL(canvas) {
                         throw "To many textures bound to this kernel: " + texId;
                     }
 
-                    setArg(name, gpgl.ARG_INT, 1, [texId]);
+                    setArg(name, gpgl.Arg.INT, 1, [texId]);
 
                     //gl.enable(tex.type);
                     gl.activeTexture(id);
                     gl.bindTexture(tex.type, tex.id);
                 },
 
+                /**
+                 * Execute kernel function.
+                 * @param {GPGL.Texture} dest (OPTIONAL) Target texture to render to. The kernel
+                 *                            renders to bound HTMLCanvasElement if target is not
+                 *                            defined.
+                 */
                 run: function(dest) {
                     gl.useProgram(program);
                     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
                     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
                     if (dest) {
-                        if (dest.config === gpgl.IMAGE_L_FLOAT) {
+                        if (dest.format === gpgl.Format.FLOAT32) {
                             throw "Rendering to float textures not supported yet";
                         }
 
@@ -224,7 +316,7 @@ function GPGL(canvas) {
                         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
                     }
 
-                    for (i in args) {
+                    for (var i in args) {
                         if (args[i].new === true) {
                             if (args[i].uniform === "uniform1fv") {
                                 // FIXME: Just a temporarily chrome fix
@@ -246,6 +338,9 @@ function GPGL(canvas) {
                     }
                 },
 
+                /**
+                 * Deletes all internally created WebGL handles.
+                 */
                 delete: function() {
                     gl.deleteShader(v);
                     gl.deleteShader(f);
@@ -255,8 +350,19 @@ function GPGL(canvas) {
             };
         },
 
-        createImage2D: function(width, height, config, data, linear) {
-            var values, format, type, fb, array,
+        /**
+         * Creates two dimensional image object (texture).
+         * @param {Number}      width  Width of image element.
+         * @param {Number}      height Height of image element.
+         * @param {GPGL#Format} format Pixel format used for image.
+         * @param {Array}       data   (OPTIONAL) Initial data for image.
+         * @param {Boolean}     linear (OPTIONAL) Enable bilinear filtering.
+         * @returns {GPGL.Image2D}
+         */
+        createImage2D: function(width, height, format, data, linear) {
+            /** @private */
+
+            var values, chan, type, fb, array,
                 tex = gl.createTexture();
 
             gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -267,18 +373,18 @@ function GPGL(canvas) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             //FIXME HANDLE IMAGE DATA
-            switch (config) {
-            case gpgl.IMAGE_RGBA_UBYTE:
+            switch (format) {
+            case gpgl.Format.UBYTE8888:
                 if (data && data.length !== width * height * 4) {
                     throw "Image input data mismatch: " +
                           data.length + " !== " + width + " * " + height + " * 4";
                 }
-                format = gl.RGBA;
+                chan = gl.RGBA;
                 type = gl.UNSIGNED_BYTE;
                 array = "Uint8Array";
                 break;
 
-            case gpgl.IMAGE_L_FLOAT:
+            case gpgl.Format.FLOAT32:
                 if (!has_float) {
                     throw "Float textures are not available";
                 }
@@ -286,7 +392,7 @@ function GPGL(canvas) {
                     throw "Image input data mismatch: " +
                           data.length + " !== " + width + " * " + height;
                 }
-                format = gl.LUMINANCE;
+                chan = gl.LUMINANCE;
                 type = gl.FLOAT;
                 array = "Float32Array";
                 break;
@@ -301,22 +407,59 @@ function GPGL(canvas) {
                 values = null;
             }
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, format, width, height, 0, format, type, values);
+            gl.texImage2D(gl.TEXTURE_2D, 0, chan, width, height, 0, chan, type, values);
 
             fb = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0); 
 
+            /** @lends GPGL.Image2D.prototype */
             return {
+                /** @public */
+
+                /**
+                 * Texture handle.
+                 * @type WebGLTexture
+                 */
                 id: tex,
+
+                /**
+                 * Framebuffer handle.
+                 * @type WebGLFramebuffer
+                 */
                 fb: fb,
+                
+                /**
+                 * Image width.
+                 * @type Number
+                 */
                 width: width,
+
+                /**
+                 * Image height.
+                 * @type Number
+                 */
                 height: height,
-                config: config,
+
+                /**
+                 * Image format.
+                 * @type GPGL#Format
+                 */
+                format: format,
+                
+                /**
+                 * Image WebGL texture type.
+                 * @type Enum
+                 */
                 type: gl.TEXTURE_2D,
 
+                /**
+                 * Read pixels from image.
+                 * @param {Boolean} decode (OPTIONAL) Decode pixels to floating point array.
+                 * @returns {UInt8Array|Float32Array} Containing the pixel data.
+                 */
                 readPixels: function(decode) {
-                    if (this.config === gpgl.IMAGE_L_FLOAT) {
+                    if (this.format === gpgl.Format.FLOAT32) {
                         throw "Reading from float textures not supported yet";
                     }
 
@@ -331,6 +474,9 @@ function GPGL(canvas) {
                     return pixels;
                 },
 
+                /**
+                 * Deletes internally created WebGL handles.
+                 */
                 delete: function() {
                     gl.deleteFramebuffer(fb);
                     gl.deleteTexture(tex);
@@ -341,4 +487,11 @@ function GPGL(canvas) {
 
     return gpgl;
 }
+
+// Declare anonymous classes for JsDoc.
+// Necessary for proper Documentation of Types created by Factories.
+/** @class GPGL Kernel */
+GPGL.Kernel = {};
+/** @class GPGL Image2D */
+GPGL.Image2D = {};
 

@@ -2,7 +2,7 @@
     <head>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
-        <script type="text/javascript" src="../gpgl.js"></script>
+        <script type="text/javascript" src="../src/gpgl.js"></script>
     </head>
     <body>
         <h1>GPGL Matrix Multiplication</h1>
@@ -36,11 +36,15 @@
                 gpgl = new GPGL(document.getElementById("canvas"));
                 if (gpgl.has_float === null) {
                     alert("Your browsers WebGL implementation does not support floating point textures");
-                    return;
+                    success = false;
                 }
             } catch (err) {
                 alert("Your browser does not support WebGL");
-                return;
+                success = false;
+            }
+
+            if (success === false) {
+                throw "WebGL is not working.";
             }
 
             // Create kernel for matrix multiplication

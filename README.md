@@ -48,7 +48,7 @@ The second one contains single 32 bit floating point values and is only availabl
 
     var floats = img.readPixels(true);
 
-Unfortunately WebGL does not offer full single precision floating point. Instead the maximum relative error is equal to 2^{-16}.
+Unfortunately WebGL does not provide full single precision floating point. Hence the increased maximum relative error is equal to 2^{-16}.
 
 Kernels
 =======
@@ -58,7 +58,7 @@ Kernels are written in OpenGL ES 2.0 Shading Language Version 1.00.
 Source
 ------
 
-Kernels can be created with the function `createKenel(source)`.
+Kernels can be created using the function `createKenel(source)`.
 The kernel source code must be provided as a string.
 The creation of a simple kernel that copies all values from one texture to another could look as follows:
 
@@ -69,7 +69,7 @@ The creation of a simple kernel that copies all values from one texture to anoth
             gl_FragColor = texture2D(in, global_id_norm);\
         }");
 
-Arguments for the kernel are global variables with the prefix `uniform`. The type `sampler2D` defines a variable referencing an image. There are also primitive data types available for integers (`int`, `ivec2`, `ivec3` and `ivec4`) and floats (`float`, `vec2`, `vec3` and `vec4`). Furthermore it is possible to declare arrays using primitive data types.
+Arguments of the kernel are global variables defined by the prefix `uniform`. The type `sampler2D` declares a variable referencing an image. Besides that special vector types are available for integers (`ivec2`, `ivec3` and `ivec4`) and floats (`vec2`, `vec3` and `vec4`). Of course, the primitive types `int` and `float` can also be used. Furthermore it is possible to declare arrays using these primitive data types.
 
 Images can be accessed using the function `texture2D(img, pos)` with the source image and normalized coordinates as arguments. The resulting value is of type `vec4` and its elements depend on the format of the input image:
 
@@ -86,6 +86,14 @@ Each thread can only write one single floating point vector of type `vec4`. This
 
 Arguments
 ---------
+
+ * `Arg.INT`
+ * `Arg.FLOAT`
+
+ * `setArgScalar(name, type, value)`
+ * `setArgVector(name, type, dim, data)`
+ * `setArgArray(name, type, ref)`
+ * `setArgImage(name, img)`
 
     kernel.setArgImage("in", img);
 

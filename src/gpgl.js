@@ -100,16 +100,16 @@ function GPGL(canvas) {
             gl.shaderSource(v, "precision highp float; \
                                 attribute vec2 a_position; \
                                 uniform float u_flipY; \
-                                uniform vec2 global_size_abs; \
+                                uniform vec2 global_size; \
                                 varying vec2 global_id_abs; \
                                 varying vec2 global_id_norm; \
                                 void main() { \
                                     global_id_norm = a_position * 0.5 + 0.5; \
-                                    global_id_abs = global_size_abs * global_id_norm; \
+                                    global_id_abs = global_size * global_id_norm; \
                                     gl_Position = vec4(a_position * vec2(1, u_flipY), 1.0, 1.0); \
                                 }");
             gl.shaderSource(f, "precision highp float; \
-                                uniform vec2 global_size_abs; \
+                                uniform vec2 global_size; \
                                 varying vec2 global_id_abs; \
                                 varying vec2 global_id_norm; \
                                 float shift_right(float v, float amt) {\
@@ -170,7 +170,7 @@ function GPGL(canvas) {
 
             var position = gl.getAttribLocation(program, "a_position");
             var flip = gl.getUniformLocation(program, "u_flipY");
-            var size = gl.getUniformLocation(program, "global_size_abs");
+            var size = gl.getUniformLocation(program, "global_size");
             var vp = gl.getParameter(gl.VIEWPORT);
             gl.enableVertexAttribArray(position);
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);

@@ -33,7 +33,7 @@ To create a new image the function `createImage2D(width, height, format [, data]
 
 The creation function for images accepts arrays of the type `Array`, `UInt8Array` and `Float32Array` as initial data.
 
-To obtain the data from device memory use the function `readPixels([decode])`:
+To obtain the data from device memory use the function `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values (see below). However, it is not necessary to simply obtain RGBA values from an image:
 
     var data = img.readPixels();
 
@@ -58,7 +58,7 @@ Kernels are written in OpenGL ES 2.0 Shading Language Version 1.00.
 Source
 ------
 
-Kernels can be created using the function `createKenel(source)`.
+Kernels can be created using the function `createKernel(source)`.
 The kernel source code must be provided as a string.
 The creation of a simple kernel that copies all values from one texture to another could look as follows:
 
@@ -73,7 +73,7 @@ Arguments of the kernel are global variables defined by the prefix `uniform`. Th
 
 Images can be accessed using the function `texture2D(img, pos)` with the source image and normalized coordinates as arguments. The resulting value is of type `vec4` and its elements depend on the format of the input image:
 
- * `Format.UBYTE8888`: all four elments are valid and contain a value within the range [0; 1] (normalized 8 bit byte values)
+ * `Format.UBYTE8888`: all four elements are valid and contain a value within the range [0; 1] (normalized 8 bit byte values)
  * `Format.FLOAT32`: only the first element is valid which contains the floating point number within the range [-2^{62}; 2^{62}]
 
 To simplify the coordinate calculation necessary for accessing images the following variables are provided in the style of OpenCL:

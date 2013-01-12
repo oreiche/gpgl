@@ -26,6 +26,10 @@ Images
 Arrays that can be accessed by the GPU are called images. An image resides within GPU
 device memory.
 It therefore needs to be allocated explicitly and can then be initialized with the array data.
+
+Creation and Reading
+--------------------
+
 To create a new image the function `createImage2D(width, height, format [, data] [, linear])` can be used:
 
     var ary = [...]; // Size: 1024
@@ -36,6 +40,9 @@ The creation function for images accepts arrays of the type `Array`, `UInt8Array
 To obtain the data from device memory use the function `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values (see below). However, it is not necessary to simply obtain RGBA values from an image:
 
     var data = img.readPixels();
+
+Image Formats
+-------------
 
 There are two different image formats available:
 

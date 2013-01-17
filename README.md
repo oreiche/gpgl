@@ -95,16 +95,19 @@ Arguments
 ---------
 
 The two primitive types that are supported as kernel arguments are:
+
  * `Arg.INT`
  * `Arg.FLOAT`
 
 Kernel arguments can be set by using the following methods:
+
  * `setArgScalar(name, type, value)`
  * `setArgVector(name, type, dim, data)`
  * `setArgArray(name, type, ref)`
  * `setArgImage(name, img)`
 
 Depending on whether the data type is scalar, vector, array or image type a different method with different parameters needs to be used. However, all have the first parameter in common, which is the name of the variable to map the kernel argument to. To set the input image for the example kernel source (see above) use the following method call:
+
     kernel.setArgImage("in", img);
 
 Execution

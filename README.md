@@ -37,7 +37,7 @@ To create a new image the function `createImage2D(width, height, format [, data]
 
 The creation function for images accepts arrays of the type `Array`, `UInt8Array` and `Float32Array` as initial data.
 
-To obtain the data from device memory use the function `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values (see below). However, it is not necessary to simply obtain RGBA values from an image:
+To obtain the data from device memory use the method `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values (see below). However, it is not necessary to simply obtain RGBA values from an image:
 
     var data = img.readPixels();
 
@@ -69,11 +69,11 @@ Kernels can be created using the function `createKernel(source)`.
 The kernel source code must be provided as a string.
 The creation of a simple kernel that copies all values from one texture to another could look as follows:
 
-    var kernel = gpgl.createKernel("\
-        uniform sampler2D in;\
+    var kernel = gpgl.createKernel(" \
+        uniform sampler2D in; \
         \
-        void main() {\
-            gl_FragColor = texture2D(in, global_id_norm);\
+        void main() { \
+            gl_FragColor = texture2D(in, global_id_norm); \
         }");
 
 Arguments of the kernel are global variables defined by the prefix `uniform`. The type `sampler2D` declares a variable referencing an image. Besides that special vector types are available for integers (`ivec2`, `ivec3` and `ivec4`) and floats (`vec2`, `vec3` and `vec4`). Of course, the primitive types `int` and `float` can also be used. Furthermore it is possible to declare arrays using these primitive data types.
@@ -94,14 +94,17 @@ Each thread can only write one single floating point vector of type `vec4`. This
 Arguments
 ---------
 
+The two primitive types that are supported as kernel arguments are:
  * `Arg.INT`
  * `Arg.FLOAT`
 
+Kernel arguments can be set by using the following methods:
  * `setArgScalar(name, type, value)`
  * `setArgVector(name, type, dim, data)`
  * `setArgArray(name, type, ref)`
  * `setArgImage(name, img)`
 
+Depending on whether the data type is scalar, vector, array or image type a different method with different parameters needs to be used. However, all have the first parameter in common, which is the name of the variable to map the kernel argument to. To set the input image for the example kernel source (see above) use the following method call:
     kernel.setArgImage("in", img);
 
 Execution
@@ -114,9 +117,9 @@ Encoding floats
 ---------------
 
     void main() {
-        float ret;
+        float val;
         ...
-        gl_FragColor = encode_float(ret);
+        gl_FragColor = encode_float(val);
     }
 
 Limitations

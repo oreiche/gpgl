@@ -94,11 +94,6 @@ Each thread can only write one single floating point vector of type `vec4`. This
 Arguments
 ---------
 
-The two primitive types that are supported as kernel arguments are:
-
- * `Arg.INT`
- * `Arg.FLOAT`
-
 Kernel arguments can be set by using the following methods:
 
  * `setArgScalar(name, type, value)`
@@ -106,7 +101,12 @@ Kernel arguments can be set by using the following methods:
  * `setArgArray(name, type, ref)`
  * `setArgImage(name, img)`
 
-Depending on whether the data type is scalar, vector, array or image type a different method with different parameters needs to be used. However, all have the first parameter in common, which is the name of the variable to map the kernel argument to. To set the input image for the example kernel source (see above) use the following method call:
+Depending on whether the data type is scalar, vector, array or image type a different method with different parameters needs to be used. However, all have the first parameter in common, which is the name of the variable to map the kernel argument to. For scalar, vectors and arrays the second parameter defines the primitive type used. The two primitive types that are supported as kernel arguments are:
+
+ * `Arg.INT`
+ * `Arg.FLOAT`
+
+To set the input image for the example kernel source (see above) use the following method call:
 
     kernel.setArgImage("in", img);
 

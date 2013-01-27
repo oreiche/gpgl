@@ -37,7 +37,7 @@ To create a new image the function `createImage2D(width, height, format [, data]
 
 The creation function for images accepts arrays of the type `Array`, `UInt8Array` and `Float32Array` as initial data.
 
-To obtain the data from device memory use the method `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values (see below). However, it is not necessary to simply obtain RGBA values from an image:
+To obtain the data from device memory use the method `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values ([see below](https://bitbucket.org/oreiche/gpgl#encoding-floats)). However, it is not necessary to simply obtain RGBA values from an image:
 
     var data = img.readPixels();
 
@@ -51,7 +51,7 @@ There are two different image formats available:
 
 The first one contains a vector of four unsigned byte values. These are typically used for image data containing RGBA values each within the range [0; 255].
 
-The second one contains single 32 bit floating point values and is only available if the WebGL extension for floating point textures is supported. Due to limitations of WebGL images using this format can be read but not written. Instead floating point values need to be encoded and written to an image of the format `Format.UBYTE8888` (see section Kernels, how to encode floats). To recover the float values from a unsigned byte image set the decode argument for reading the pixels:
+The second one contains single 32 bit floating point values and is only available if the WebGL extension for floating point textures is supported. Due to limitations of WebGL images using this format can be read but not written. Instead floating point values need to be encoded and written to an image of the format `Format.UBYTE8888` ([see section Kernels, how to encode floats](https://bitbucket.org/oreiche/gpgl#encoding-floats)). To recover the float values from a unsigned byte image set the decode argument for reading the pixels:
 
     var floats = img.readPixels(true);
 
@@ -106,7 +106,7 @@ Depending on whether the data type is scalar, vector, array or image type a diff
  * `Arg.INT`
  * `Arg.FLOAT`
 
-To set the input image for the example kernel source (see above) use the following method call:
+To set the input image for the example kernel source ([see above](https://bitbucket.org/oreiche/gpgl#source)) use the following method call:
 
     kernel.setArgImage("in", img);
 
@@ -131,7 +131,7 @@ Writing to floating point textures is not supported by WebGL. Therefore it is ne
         gl_FragColor = encode_float(val);
     }
 
-The source code for encoding and more detailed information about this issue can be found on http://concord-consortium.github.com/lab/experiments/webgl-gpgpu/webgl.html
+The source code for encoding and more detailed information about this issue can be found [here](http://concord-consortium.github.com/lab/experiments/webgl-gpgpu/webgl.html).
 
 Example Code (Blur)
 ===================
@@ -175,7 +175,7 @@ The following example code sums up the values within a 3x3 window and stores the
     kernel.delete();
     image.delete();
 
-To see the full code and other examples have a look at the `example` directory in the sources.
+To see the full code and other examples have a look at [the example directory in the sources](https://bitbucket.org/oreiche/gpgl/src/default/example).
 
 Limitations
 ===========

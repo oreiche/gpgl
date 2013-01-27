@@ -1,0 +1,115 @@
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <script type="text/javascript" src="../src/gpgl.js"></script>
+    </head>
+    <body>
+        <h1>GPGL Gaussian Blur</h1>
+        <canvas id="loader"></canvas>
+        <canvas id="canvas"></canvas>
+        <p id="label"/>
+        <script type="text/javascript">
+            var lenna = new Image();
+            lenna.src = "lenna.png";
+
+            lenna.onload = function() {
+                var width = lenna.width,
+                    height = lenna.height,
+                    canvas = document.getElementById("canvas"),
+                    loader = document.getElementById("loader"),
+                    label = document.getElementById("label"),
+                    gpgl, imageData, image, mask, kernel, success,
+                    time_cpu, time_gpu, time_gpu_cpy;
+
+                // Prepare render target
+                canvas.width = width;
+                canvas.height = height;
+
+                // Obtain image data
+                loader.width = width;
+                loader.height = height;
+                ctx = loader.getContext("2d");
+                ctx.drawImage(lenna, 0, 0);
+                imageData = ctx.getImageData(0, 0, width, height);
+
+                // Instantiate general purpose GL wrapper
+                try {
+                    gpgl = new GPGL(canvas);
+                } catch (err) {
+                    alert("Your browser does not support WebGL");
+                    success = false;
+                }
+
+                if (success === false) {
+                    throw "WebGL is not working.";
+                }
+
+                // Create kernel for blur
+                kernel = gpgl.createKernel("\
+                    uniform sampler2D img;\
+                    uniform float mask[9];\
+                    \
+                    void main() {\
+                        vec2 step = vec2(1.0, 1.0) / global_size;\
+                        gl_FragColor = ((mask[0] * texture2D(img, global_id_norm - step)) +\
+                                        (mask[1] * texture2D(img, global_id_norm - vec2(0, step.y))) +\
+                                        (mask[2] * texture2D(img, global_id_norm - vec2(-step.x, step.y))) +\
+                                        (mask[3] * texture2D(img, global_id_norm - vec2(step.x, 0))) +\
+                                        (mask[4] * texture2D(img, global_id_norm)) +\
+                                        (mask[5] * texture2D(img, global_id_norm + vec2(step.x, 0))) +\
+                                        (mask[6] * texture2D(img, global_id_norm + vec2(-step.x, step.y))) +\
+                                        (mask[7] * texture2D(img, global_id_norm + vec2(0, step.y))) +\
+                                        (mask[8] * texture2D(img, global_id_norm + step))) / 16.0;\
+                    }");
+
+                // Copy image data from host memory to device memory
+                time_gpu_cpy = new Date().getTime();
+                image = gpgl.createImage2D(width, height, gpgl.Format.UBYTE8888, imageData.data);
+                time_gpu_cpy = new Date().getTime() - time_gpu_cpy;
+
+                // Create mask for gaussian blur
+                mask = [1, 2, 1,
+                        2, 4, 2,
+                        1, 2, 1];
+
+                // Set kernel parameter
+                kernel.setArgImage("img", image);
+                kernel.setArgArray("mask", gpgl.Arg.FLOAT, mask);
+
+                // Run kernel and render to bound canvas
+                time_gpu = new Date().getTime();
+                kernel.run();
+                time_gpu = new Date().getTime() - time_gpu;
+
+                label.innerHTML += "<p>" +
+                                   "GPU execution duration: " + time_gpu + " ms<br>" +
+                                   "GPU memory copy duration: " + time_gpu_cpy + " ms</p>";
+
+                // Cleanup
+                kernel.delete();
+                image.delete();
+
+                // Run cpu reference implementation
+                time_cpu = new Date().getTime();
+                var result = [];
+                for (i = 0; i < width*height; ++i) {
+                    result[i] = ((mask[0] * imageData[i - 1 - width]) +
+                                 (mask[1] * imageData[i - width]) +
+                                 (mask[2] * imageData[i + 1 - width]) +
+                                 (mask[3] * imageData[i - 1]) +
+                                 (mask[4] * imageData[i]) +
+                                 (mask[5] * imageData[i + 1]) +
+                                 (mask[6] * imageData[i - 1 + width]) +
+                                 (mask[7] * imageData[i + width]) +
+                                 (mask[8] * imageData[i + 1 + width])) / 16;
+                }
+                time_cpu = new Date().getTime() - time_cpu;
+
+                label.innerHTML += "<p>" +
+                                   "CPU execution duration: " + time_cpu + " ms<br>" +
+                                   "Speedup: " + (time_cpu / (time_gpu + time_gpu_cpy)) + "</p>";
+            }
+        </script>
+    </body>
+</html>

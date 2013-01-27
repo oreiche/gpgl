@@ -118,7 +118,7 @@ Kernels can be executed using the method `run([output])`. The optional output pa
     var out = gpgl.createImage(16, 16, gpgl.Format.UBYTE8888);
     kernel.run(out);
 
-If no output image is defined the default canvas is used for rendering. The default canvas it the HTMLCanvas element that was bound to the GPGL wrapper during its initialization.
+If no output image is defined the default canvas is used for rendering. The default canvas is the HTMLCanvas element that was bound to the GPGL wrapper during its initialization.
 
 Encoding floats
 ---------------

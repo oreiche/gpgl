@@ -97,7 +97,7 @@ Arguments
 Kernel arguments can be set by using the following methods:
 
  * `setArgScalar(name, type, value)`
- * `setArgVector(name, type, dim, data)`
+ * `setArgVector(name, type, data)`
  * `setArgArray(name, type, ref)`
  * `setArgImage(name, img)`
 

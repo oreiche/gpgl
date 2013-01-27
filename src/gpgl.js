@@ -185,13 +185,10 @@ function GPGL(canvas) {
 
             var args = {};
 
-            function setArg(name, type, dim, data, isarray) {
-                if (dim !== data.length) {
-                    throw "Vector input data mismatch: " +
-                          dim + " !== " + data.length;
-                }
+            function setArg(name, type, data, isarray) {
+                var location, uniform,
+                    dim = data.length;
 
-                var location, uniform;
                 if (args[name]) {
                     location = args[name].location;
                     uniform = args[name].uniform;
@@ -200,10 +197,10 @@ function GPGL(canvas) {
                     uniform = "uniform";
                     switch (type) {
                     case gpgl.Arg.INT:
-                        uniform += "" + dim + "i";//v";
+                        uniform += "" + dim + "i";
                         break;
                     case gpgl.Arg.FLOAT:
-                        uniform += "" + dim + "f";//v";
+                        uniform += "" + dim + "f";
                         break;
                     default:
                         throw "Unknown argument type id '" + type + "'";
@@ -215,9 +212,7 @@ function GPGL(canvas) {
                     }
                 }
 
-                //gl[uniform](location, data);
                 args[name] = {uniform: uniform, location: location, data: data, new: true};
-                //gl[uniform](location, data[0], data[1], data[2], data[3]);
             }
 
             /** @lends GPGL.Kernel.prototype */
@@ -231,18 +226,22 @@ function GPGL(canvas) {
                  * @param {Number}   value Value to store in the kernel uniform.
                  */
                 setArgScalar: function(name, type, value) {
-                    setArg(name, type, 1, [value]);
+                    setArg(name, type, [value]);
                 },
 
                 /**
                  * Set vector kernel argument.
                  * @param {String}   name Name of the kernel uniform to map the values to.
                  * @param {GPGL#Arg} type Type of the kernel uniform values.
-                 * @param {Number}   dim  Dimension of the data array.
                  * @param {Array}    data Data array containing the values to store.
                  */
-                setArgVector: function(name, type, dim, data) {
-                    setArg(name, type, dim, data);
+                setArgVector: function(name, type, data) {
+                    if (data.length === 0 || data.length > 4) {
+                        throw "Wrong vector dimension: " +
+                              name + ".length = " + data.length;
+                    }
+
+                    setArg(name, type, data);
                 },
 
                 /**
@@ -252,7 +251,7 @@ function GPGL(canvas) {
                  * @param {Array}    ref  Reference of the array to set.
                  */
                 setArgArray: function(name, type, ref) {
-                    setArg(name, type, 1, [ref], true);
+                    setArg(name, type, [ref], true);
                 },
 
                 /**
@@ -277,7 +276,7 @@ function GPGL(canvas) {
                         throw "To many textures bound to this kernel: " + texId;
                     }
 
-                    setArg(name, gpgl.Arg.INT, 1, [texId]);
+                    setArg(name, gpgl.Arg.INT, [texId]);
 
                     //gl.enable(tex.type);
                     gl.activeTexture(id);

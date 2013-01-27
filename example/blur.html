@@ -10,16 +10,16 @@
         <canvas id="canvas"></canvas>
         <p id="label"/>
         <script type="text/javascript">
-            var img = new Image();
-            img.src = "lenna.png";
+            var lenna = new Image();
+            lenna.src = "lenna.png";
 
-            img.onload = function() {
-                var width = img.width,
-                    height = img.height,
+            lenna.onload = function() {
+                var width = lenna.width,
+                    height = lenna.height,
                     canvas = document.getElementById("canvas"),
                     loader = document.getElementById("loader"),
                     label = document.getElementById("label"),
-                    gpgl, imgData, kernel, success,
+                    gpgl, imageData, image, kernel, success,
                     time_cpu, time_gpu, time_gpu_cpy;
 
                 // Prepare render target
@@ -30,8 +30,8 @@
                 loader.width = width;
                 loader.height = height;
                 ctx = loader.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-                imgData = ctx.getImageData(0, 0, width, height);
+                ctx.drawImage(lenna, 0, 0);
+                imageData = ctx.getImageData(0, 0, width, height);
 
                 // Instantiate general purpose GL wrapper 
                 try {
@@ -64,11 +64,11 @@
 
                 // Copy image data from host memory to device memory
                 time_gpu_cpy = new Date().getTime();
-                var tex = gpgl.createImage2D(width, height, gpgl.Format.UBYTE8888, imgData.data);
+                image = gpgl.createImage2D(width, height, gpgl.Format.UBYTE8888, imageData.data);
                 time_gpu_cpy = new Date().getTime() - time_gpu_cpy;
 
                 // Set kernel parameter
-                kernel.setArgImage("img", tex);
+                kernel.setArgImage("img", image);
 
                 // Run kernel and render to bound canvas
                 time_gpu = new Date().getTime();
@@ -81,21 +81,21 @@
 
                 // Cleanup
                 kernel.delete();
-                tex.delete();
+                image.delete();
 
                 // Run cpu reference implementation
                 time_cpu = new Date().getTime();
                 var result = [];
                 for (i = 0; i < width*height; ++i) {
-                    result[i] = (imgData[i - 1 - width] +
-                                 imgData[i - width] +
-                                 imgData[i + 1 - width] +
-                                 imgData[i - 1] +
-                                 imgData[i] +
-                                 imgData[i + 1] +
-                                 imgData[i - 1 + width] +
-                                 imgData[i + width] +
-                                 imgData[i + 1 + width]) / 9;
+                    result[i] = (imageData[i - 1 - width] +
+                                 imageData[i - width] +
+                                 imageData[i + 1 - width] +
+                                 imageData[i - 1] +
+                                 imageData[i] +
+                                 imageData[i + 1] +
+                                 imageData[i - 1 + width] +
+                                 imageData[i + width] +
+                                 imageData[i + 1 + width]) / 9;
                 }
                 time_cpu = new Date().getTime() - time_cpu;
 

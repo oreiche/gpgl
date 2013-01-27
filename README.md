@@ -129,6 +129,49 @@ Encoding floats
         gl_FragColor = encode_float(val);
     }
 
+Example Code (Blur)
+===================
+
+    // Instantiate general purpose GL wrapper
+    try {
+        gpgl = new GPGL(canvas);
+        if (gpgl.has_float === null) {
+            alert("Your browsers WebGL implementation does not support floating point textures");
+        }
+    } catch (err) {
+        alert("Your browser does not support WebGL");
+    }
+
+    // Create kernel for blur
+    kernel = gpgl.createKernel("\
+        uniform sampler2D img;\
+        \
+        void main() {\
+            vec2 step = vec2(1.0, 1.0) / global_size;\
+            gl_FragColor = (texture2D(img, global_id_norm - step) +\
+                            texture2D(img, global_id_norm - vec2(0, step.y)) +\
+                            texture2D(img, global_id_norm - vec2(-step.x, step.y)) +\
+                            texture2D(img, global_id_norm - vec2(step.x, 0)) +\
+                            texture2D(img, global_id_norm) +\
+                            texture2D(img, global_id_norm + vec2(step.x, 0)) +\
+                            texture2D(img, global_id_norm + vec2(-step.x, step.y)) +\
+                            texture2D(img, global_id_norm + vec2(0, step.y)) +\
+                            texture2D(img, global_id_norm + step)) / 9.0;\
+        }");
+
+    // Copy image data from host memory to device memory
+    var image = gpgl.createImage2D(width, height, gpgl.Format.UBYTE8888, imageData.data);
+
+    // Set kernel parameter
+    kernel.setArgImage("img", image);
+
+    // Run kernel and render to encapsulated canvas
+    kernel.run();
+
+    // Cleanup
+    kernel.delete();
+    image.delete();
+
 Limitations
 ===========
 

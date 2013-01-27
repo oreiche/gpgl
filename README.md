@@ -132,7 +132,7 @@ Encoding floats
 Limitations
 ===========
 
- * precision
- * shading language
- * writing float
+ * less precision
+ * limited shading language
+ * overhead for writing float images
 

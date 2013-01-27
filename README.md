@@ -132,12 +132,11 @@ Encoding floats
 Example Code (Blur)
 ===================
 
+The following example code sums up the values within a 3x3 window and stores the averaged value:
+
     // Instantiate general purpose GL wrapper
     try {
         gpgl = new GPGL(canvas);
-        if (gpgl.has_float === null) {
-            alert("Your browsers WebGL implementation does not support floating point textures");
-        }
     } catch (err) {
         alert("Your browser does not support WebGL");
     }
@@ -165,12 +164,14 @@ Example Code (Blur)
     // Set kernel parameter
     kernel.setArgImage("img", image);
 
-    // Run kernel and render to encapsulated canvas
+    // Run kernel and render to bound canvas
     kernel.run();
 
     // Cleanup
     kernel.delete();
     image.delete();
+
+To see the full code and other examples have a look at the `example` directory in the sources.
 
 Limitations
 ===========

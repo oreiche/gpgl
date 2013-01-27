@@ -36,10 +36,6 @@
                 // Instantiate general purpose GL wrapper 
                 try {
                     gpgl = new GPGL(canvas);
-                    if (gpgl.has_float === null) {
-                        alert("Your browsers WebGL implementation does not support floating point textures");
-                        success = false;
-                    }
                 } catch (err) {
                     alert("Your browser does not support WebGL");
                     success = false;
@@ -74,7 +70,7 @@
                 // Set kernel parameter
                 kernel.setArgImage("img", tex);
 
-                // Run kernel and render to encapsulated canvas
+                // Run kernel and render to bound canvas
                 time_gpu = new Date().getTime();
                 kernel.run();
                 time_gpu = new Date().getTime() - time_gpu;

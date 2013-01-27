@@ -123,7 +123,7 @@ If no output image is defined the default canvas is used for rendering. The defa
 Encoding floats
 ---------------
 
-Writing to floating point textures is not supported by WebGL. Therefore it is necessary to work around this issue by encoding float values in a way that they can be stored in an image of the type `UBYTE888`. This can be easily done by using the built-in kernel function `encode_float([value])`:
+Writing to floating point textures is not supported by WebGL. Therefore it is necessary to work around this issue by encoding float values in a way that they can be stored in an image of the type `UBYTE8888`. This can be easily done by using the built-in kernel function `encode_float([value])`:
 
     void main() {
         float val;

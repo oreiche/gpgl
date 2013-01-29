@@ -1,0 +1,12 @@
+[patterns]
+.hgignore = native
+.hgtags = native
+.hgeol = native
+.hgsub = native
+.hgsubstate = native
+**.txt = native
+**.js = native
+**.md = native
+**.sh = native
+**.html = native
+**.png = BIN

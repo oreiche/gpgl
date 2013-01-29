@@ -236,9 +236,11 @@ function GPGL(canvas) {
                  * @param {Array}    data Data array containing the values to store.
                  */
                 setArgVector: function(name, type, data) {
-                    if (data.length === 0 || data.length > 4) {
-                        throw "Wrong vector dimension: " +
-                              name + ".length = " + data.length;
+                    if (data.length === undefined ||
+                        data.length === 0 ||
+                        data.length > 4) {
+                        throw "Wrong dimension for vector " +
+                              name + ": " + data.length;
                     }
 
                     setArg(name, type, data);

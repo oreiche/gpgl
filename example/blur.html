@@ -86,16 +86,17 @@
                 // Run cpu reference implementation
                 time_cpu = new Date().getTime();
                 var result = [];
-                for (i = 0; i < width*height; ++i) {
-                    result[i] = (imageData[i - 1 - width] +
-                                 imageData[i - width] +
-                                 imageData[i + 1 - width] +
-                                 imageData[i - 1] +
+                var pitch = width * 4;
+                for (i = 0; i < pitch*height; ++i) {
+                    result[i] = (imageData[i - 4 - pitch] +
+                                 imageData[i - pitch] +
+                                 imageData[i + 4 - pitch] +
+                                 imageData[i - 4] +
                                  imageData[i] +
-                                 imageData[i + 1] +
-                                 imageData[i - 1 + width] +
-                                 imageData[i + width] +
-                                 imageData[i + 1 + width]) / 9;
+                                 imageData[i + 4] +
+                                 imageData[i - 4 + pitch] +
+                                 imageData[i + pitch] +
+                                 imageData[i + 4 + pitch]) / 9;
                 }
                 time_cpu = new Date().getTime() - time_cpu;
 

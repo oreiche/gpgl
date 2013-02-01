@@ -115,7 +115,7 @@
             time_cpu = new Date().getTime() - time_cpu;
 
             document.write("<p>" +
-                           "CPU execution duration: " + time_cpu + " ms<br>" +
+                           "CPU execution duration (single core): " + time_cpu + " ms<br>" +
                            "Speedup: " + (time_cpu / time_gpu_cpy) + "</p>");
 
             // Calculate biggest relative error occurred

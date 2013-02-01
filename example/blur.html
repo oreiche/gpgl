@@ -101,7 +101,7 @@
                 time_cpu = new Date().getTime() - time_cpu;
 
                 label.innerHTML += "<p>" +
-                                   "CPU execution duration: " + time_cpu + " ms<br>" +
+                                   "CPU execution duration (single core): " + time_cpu + " ms<br>" +
                                    "Speedup: " + (time_cpu / (time_gpu + time_gpu_cpy)) + "</p>";
             }
         </script>

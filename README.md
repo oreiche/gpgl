@@ -30,7 +30,7 @@ It therefore needs to be allocated explicitly and can then be initialized with t
 Creation and Reading
 --------------------
 
-To create a new image the function `createImage2D(width, height, format [, data] [, linear])` can be used:
+To create a new image the function `createImage2D(width, height, format [, data [, linear]])` can be used:
 
     var ary = [...]; // Size: 1024
     var img = gpgl.createImage2D(16, 16, gpgl.Format.UBYTE8888, ary);
@@ -123,7 +123,7 @@ If no output image is defined the default canvas is used for rendering. The defa
 Encoding floats
 ---------------
 
-Writing to floating point textures is not supported by WebGL. Therefore it is necessary to work around this issue by encoding float values in a way that they can be stored in an image of the type `UBYTE8888`. This can be easily done by using the built-in kernel function `encode_float([value])`:
+Writing to floating point textures is not supported by WebGL. Therefore it is necessary to work around this issue by encoding float values in a way that they can be stored in an image of the type `UBYTE8888`. This can be easily done by using the built-in kernel function `encode_float(value)`:
 
     void main() {
         float val;

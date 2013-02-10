@@ -94,7 +94,7 @@
                 time_cpu = new Date().getTime();
                 var result = [];
                 var pitch = width * 4;
-                for (i = 0; i < pitch*height; ++i) {
+                for (i = pitch+4; i < (pitch*(height-1))-4; ++i) {
                     result[i] = ((mask[0] * imageData[i - 4 - pitch]) +
                                  (mask[1] * imageData[i - pitch]) +
                                  (mask[2] * imageData[i + 4 - pitch]) +

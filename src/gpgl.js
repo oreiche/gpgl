@@ -185,7 +185,7 @@ function GPGL(canvas) {
 
             var args = {};
 
-            function setArg(name, type, data, isarray) {
+            function setArg(name, type, data, info) {
                 var location, uniform,
                     dim = data.length;
 
@@ -207,12 +207,17 @@ function GPGL(canvas) {
                         break;
                     }
 
-                    if (isarray) {
+                    if (info !== undefined && info.isarray === true) {
                         uniform += "v";
                     }
                 }
 
-                args[name] = {uniform: uniform, location: location, data: data, new: true};
+                if (info === undefined || info.isimage !== true) {
+                    args[name] = {uniform: uniform, location: location, data: data, new: true};
+                } else {
+                    args[name] = {uniform: uniform, location: location, data: data, new: true,
+                                  id: info.id, tex: info.tex, type: info.type};
+                }
             }
 
             /** @lends GPGL.Kernel.prototype */
@@ -263,7 +268,7 @@ function GPGL(canvas) {
                     } else if (ref.length === undefined) {
                         throw "Array argument is no array: " + name;
                     }
-                    setArg(name, type, [ref], true);
+                    setArg(name, type, [ref], {isarray: true});
                 },
 
                 /**
@@ -297,11 +302,8 @@ function GPGL(canvas) {
                         throw "To many textures bound to this kernel: " + texId;
                     }
 
-                    setArg(name, gpgl.Arg.INT, [texId]);
-
-                    //gl.enable(tex.type);
-                    gl.activeTexture(id);
-                    gl.bindTexture(tex.type, tex.id);
+                    setArg(name, gpgl.Arg.INT, [texId],
+                           {isimage: true, id: id, tex: tex.id, type: tex.type});
                 },
 
                 /**
@@ -345,6 +347,11 @@ function GPGL(canvas) {
                                 gl[args[i].uniform](args[i].location, args[i].data[0], args[i].data[1], args[i].data[2], args[i].data[3]);
                             }
                             args[i].new = false;
+                        }
+                        if (args[i].id !== undefined) {
+                            // It's a texture, refresh binding
+                            gl.activeTexture(args[i].id);
+                            gl.bindTexture(args[i].type, args[i].tex);
                         }
                     }
 

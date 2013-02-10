@@ -226,6 +226,9 @@ function GPGL(canvas) {
                  * @param {Number}   value Value to store in the kernel uniform.
                  */
                 setArgScalar: function(name, type, value) {
+                    if (value === undefined) {
+                        throw "Scalar argument value is undefined: " + name;
+                    }
                     setArg(name, type, [value]);
                 },
 
@@ -236,11 +239,13 @@ function GPGL(canvas) {
                  * @param {Array}    data Data array containing the values to store.
                  */
                 setArgVector: function(name, type, data) {
-                    if (data.length === undefined ||
-                        data.length === 0 ||
-                        data.length > 4) {
-                        throw "Wrong dimension for vector " +
-                              name + ": " + data.length;
+                    if (data === undefined) {
+                        throw "Vector argument is undefined: " + name;
+                    } else if (data.length === undefined ||
+                               data.length === 0 ||
+                               data.length > 4) {
+                        throw "Wrong dimension for vector '" +
+                              name + "': " + data.length;
                     }
 
                     setArg(name, type, data);
@@ -253,6 +258,11 @@ function GPGL(canvas) {
                  * @param {Array}    ref  Reference of the array to set.
                  */
                 setArgArray: function(name, type, ref) {
+                    if (ref === undefined) {
+                        throw "Array argument is undefined: " + name;
+                    } else if (ref.length === undefined) {
+                        throw "Array argument is no array: " + name;
+                    }
                     setArg(name, type, [ref], true);
                 },
 
@@ -263,6 +273,15 @@ function GPGL(canvas) {
                  */
                 setArgImage: function(name, tex) {
                     var id, texId = 0;
+
+                    if (tex === undefined) {
+                        throw "Image argument is undefined: " + name;
+                    } else if (tex.type !== gl.TEXTURE_2D ||
+                               tex.id === undefined ||
+                               tex.id === null) {
+                        throw "Image argumetn is no image: " + name;
+                    }
+
                     if (texIds.dict[name] === undefined) {
                         while (texIds.list[texId]) {
                             ++texId;

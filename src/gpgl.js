@@ -336,6 +336,7 @@ function GPGL(canvas) {
                             renderTarget = Target.Canvas;
                         }
                         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                        gl.viewport(0, 0, canvas.width, canvas.height);
                     }
 
                     for (var i in args) {

@@ -418,9 +418,12 @@ function GPGL(canvas) {
                     throw "Float textures are not available";
                 } 
                 if (!has_float_linear && linear) {
-                    if (console) {
-                        console.warn("Extension for linear filtering of float "
-                                     + "textures is not supported");
+                    // However, this works with Chrome (<=28) and Firefox (<=22)
+                    // even though the extension is not available. Therefore,
+                    // no error will be thrown.
+                    if (console && console.warn) {
+                        console.warn("Linear filtering of float textures is "
+                                     + "not available");
                     }
                 }
                 if (data && data.length !== width * height) {

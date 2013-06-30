@@ -14,6 +14,7 @@ function GPGL(canvas) {
     }
 
     var has_float = gl.getExtension("OES_texture_float");
+    var has_float_linear = gl.getExtension("OES_float_linear");
 
     var gpgl = {
     /** @lends GPGL.prototype */
@@ -30,6 +31,13 @@ function GPGL(canvas) {
          * @type Boolean
          */
         has_float: has_float,
+
+        /**
+         * Indicates whether floating point textures extension supports linear
+         * filtering.
+         * @type Boolean
+         */
+        has_float_linear: has_float_linear,
 
         /**
          * Enumerator for image format

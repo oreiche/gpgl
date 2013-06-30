@@ -401,13 +401,6 @@ function GPGL(canvas) {
             var values, chan, type, fb, array,
                 tex = gl.createTexture();
 
-            gl.bindTexture(gl.TEXTURE_2D, tex);
-            //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (linear ? gl.LINEAR : gl.NEAREST));
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, (linear ? gl.LINEAR : gl.NEAREST));
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
             //FIXME HANDLE IMAGE DATA
             switch (format) {
             case gpgl.Format.UBYTE8888:
@@ -423,6 +416,12 @@ function GPGL(canvas) {
             case gpgl.Format.FLOAT32:
                 if (!has_float) {
                     throw "Float textures are not available";
+                } 
+                if (!has_float_linear && linear) {
+                    if (console) {
+                        console.warn("Extension for linear filtering of float "
+                                     + "textures is not supported");
+                    }
                 }
                 if (data && data.length !== width * height) {
                     throw "Image input data mismatch: " +
@@ -442,6 +441,13 @@ function GPGL(canvas) {
             } else {
                 values = null;
             }
+
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, (linear ? gl.LINEAR : gl.NEAREST));
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, (linear ? gl.LINEAR : gl.NEAREST));
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, chan, width, height, 0, chan, type, values);
 

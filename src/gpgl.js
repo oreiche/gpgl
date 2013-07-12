@@ -116,7 +116,11 @@ function GPGL(canvas) {
                                     global_id_abs = global_size * global_id_norm; \
                                     gl_Position = vec4(a_position * vec2(1, u_flipY), 1.0, 1.0); \
                                 }");
-            gl.shaderSource(f, "precision highp float; \
+            gl.shaderSource(f, "#ifdef GL_FRAGMENT_PRECISION_HIGH \n\
+                                precision highp float; \n\
+                                #else \n\
+                                precision mediump float; \n\
+                                #endif \n\
                                 uniform vec2 global_size; \
                                 varying vec2 global_id_abs; \
                                 varying vec2 global_id_norm; \

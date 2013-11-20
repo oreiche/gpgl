@@ -429,6 +429,13 @@ function GPGL(canvas) {
                         console.warn("Linear filtering of float textures is "
                                      + "not available");
                     }
+                    // Google and Mozilla changed their mind. Since Chrome 32
+                    // and Firefox 25 linear filtering cannot be enabled
+                    // anymore (at least on my machines). Not only that the
+                    // filtering is disabled but also the complete rendering
+                    // execution is aborted if falsely specified. Therefore, we
+                    // need to force switching off linear filtering.
+                    linear = false;
                 }
                 if (data && data.length !== width * height) {
                     throw "Image input data mismatch: " +

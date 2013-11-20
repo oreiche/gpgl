@@ -37,6 +37,8 @@ To create a new image the function `createImage2D(width, height, format [, data 
 
 The creation function for images accepts arrays of the type `Array`, `UInt8Array` and `Float32Array` as initial data.
 
+The parameter `linear` specifies whether to use linear filtering for accessing texture positions in between pixels values or not. If you want to use linear filtering on floating point textures you should ensure that this feature is available by querying `gpgl.has_float_linear`. If it is specified but not supported than the parameter will be ignored and a warning message will be thrown.
+
 To obtain the data from device memory use the method `readPixels([decode])`. The flag `decode` triggers the decoding of previously encoded float values ([see below](https://bitbucket.org/oreiche/gpgl#encoding-floats)). However, it is not necessary to simply obtain RGBA values from an image:
 
     var data = img.readPixels();

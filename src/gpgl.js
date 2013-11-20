@@ -420,14 +420,14 @@ function GPGL(canvas) {
             case gpgl.Format.FLOAT32:
                 if (!has_float) {
                     throw "Float textures are not available";
-                } 
+                }
                 if (!has_float_linear && linear) {
                     // However, this works with Chrome (<=28) and Firefox (<=22)
                     // even though the extension is not available. Therefore,
                     // no error will be thrown.
                     if (console && console.warn) {
                         console.warn("Linear filtering of float textures is "
-                                     + "not available");
+                                     + "not available.");
                     }
                     // Google and Mozilla changed their mind. Since Chrome 32
                     // and Firefox 25 linear filtering cannot be enabled
@@ -467,7 +467,7 @@ function GPGL(canvas) {
 
             fb = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0); 
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
 
             /** @lends GPGL.Image2D.prototype */
             return {
@@ -484,7 +484,7 @@ function GPGL(canvas) {
                  * @type WebGLFramebuffer
                  */
                 fb: fb,
-                
+
                 /**
                  * Image width.
                  * @type Number
@@ -502,7 +502,7 @@ function GPGL(canvas) {
                  * @type GPGL#Format
                  */
                 format: format,
-                
+
                 /**
                  * Image WebGL texture type.
                  * @type Enum

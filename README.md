@@ -117,7 +117,7 @@ Execution
 
 Kernels can be executed using the method `run([output])`. The optional output parameter defines the target image for rendering and therefore describes the iteration space for kernel threads. The following code shows an possible kernel execution.
 
-    var out = gpgl.createImage(16, 16, gpgl.Format.UBYTE8888);
+    var out = gpgl.createImage2D(16, 16, gpgl.Format.UBYTE8888);
     kernel.run(out);
 
 If no output image is defined the default canvas is used for rendering. The default canvas is the HTMLCanvas element that was bound to the GPGL wrapper during its initialization.
@@ -185,4 +185,3 @@ Limitations
  * less precision
  * limited shading language
  * overhead for writing float images
-
